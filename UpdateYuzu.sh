@@ -1,17 +1,25 @@
-#! /bin/bash
+#!/bin/bash
 
-YUZU_PATH=/home/deck/Applications/yuzu.AppImage
+YUZU_DIR=$(dirname $(realpath $0))
+pushd $YUZU_DIR > /dev/null
 
-# Check if internet access exists and if github is up
-if ping -q -c 1 -W 1 github.com >/dev/null; then
+YUZU_FILE_NAME_PREFIX="Linux-Yuzu"
+CURR_FILE_NAME=$(ls | grep ${YUZU_FILE_NAME_PREFIX})
 
-# Download latest Yuzu EA
-curl -s https://api.github.com/repos/pineappleEA/pineapple-src/releases/latest | jq -r ".assets[0] | .browser_download_url" | wget -qO $YUZU_PATH -i -
+GH_DL_LINK="https://api.github.com/repos/pineappleEA/pineapple-src/releases/latest"
+LATEST_YUZU_INFO=`curl -s ${GH_DL_LINK} | jq -r '.assets[] | select(.name | startswith('\"${YUZU_FILE_NAME_PREFIX}\"'))'`
 
-# Give it executable permissions
-chmod +x $YUZU_PATH
+if [ "${LATEST_YUZU_INFO}" != "" ]; then
+    NEW_FILE_NAME=`echo ${LATEST_YUZU_INFO} | jq -r '.name'`
+    if [[ ${NEW_FILE_NAME} > ${CURR_FILE_NAME} ]]; then
+        echo ${LATEST_YUZU_INFO} | jq -r '.browser_download_url' | wget -qO ${NEW_FILE_NAME} -i -
+        find -maxdepth 1 -name "${YUZU_FILE_NAME_PREFIX}*" ! -name ${NEW_FILE_NAME} -type f -delete
+        chmod +x ${NEW_FILE_NAME}
 
+        CURR_FILE_NAME=${NEW_FILE_NAME}
+    fi
 fi
 
-# Launch Yuzu
-$YUZU_PATH
+popd > /dev/null
+${YUZU_DIR}/${CURR_FILE_NAME} $@ > /de
+v/null
