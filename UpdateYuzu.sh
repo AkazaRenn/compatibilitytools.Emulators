@@ -1,25 +1,24 @@
 #!/bin/bash
 
-YUZU_DIR=$(dirname $(realpath $0))
-pushd $YUZU_DIR > /dev/null
-
-YUZU_FILE_NAME_PREFIX="Linux-Yuzu"
-CURR_FILE_NAME=$(ls | grep ${YUZU_FILE_NAME_PREFIX})
-
+YUZU_DIR=$(dirname $(realpath $0))/Yuzu
+YUZU_FILE_NAME_PATTERN="^Linux-Yuzu-.*AppImage$"
 GH_DL_LINK="https://api.github.com/repos/pineappleEA/pineapple-src/releases/latest"
-LATEST_YUZU_INFO=`curl -s ${GH_DL_LINK} | jq -r '.assets[] | select(.name | startswith('\"${YUZU_FILE_NAME_PREFIX}\"'))'`
 
-if [ "${LATEST_YUZU_INFO}" != "" ]; then
-    NEW_FILE_NAME=`echo ${LATEST_YUZU_INFO} | jq -r '.name'`
-    if [[ ${NEW_FILE_NAME} > ${CURR_FILE_NAME} ]]; then
-        echo ${LATEST_YUZU_INFO} | jq -r '.browser_download_url' | wget -qO ${NEW_FILE_NAME} -i -
-        find -maxdepth 1 -name "${YUZU_FILE_NAME_PREFIX}*" ! -name ${NEW_FILE_NAME} -type f -delete
-        chmod +x ${NEW_FILE_NAME}
-
-        CURR_FILE_NAME=${NEW_FILE_NAME}
+latest_yuzu_info=`curl -s ${GH_DL_LINK} | jq -r '.assets[] | select(.name | test('\"${YUZU_FILE_NAME_PATTERN}\"'))'`
+if [ "${latest_yuzu_info}" != "" ]; then
+    mkdir -p ${YUZU_DIR}
+    pushd ${YUZU_DIR} > /dev/null
+    curr_file_name=$(ls | grep -o ${YUZU_FILE_NAME_PATTERN})
+    new_file_name=`echo ${latest_yuzu_info} | jq -r '.name'`
+    
+    if [[ ${new_file_name} > ${curr_file_name} ]]; then
+        echo ${latest_yuzu_info} | jq -r '.browser_download_url' | wget -qO ${new_file_name} -i -
+        find . * -maxdepth 1 -regextype sed -regex ${YUZU_FILE_NAME_PATTERN} ! -name ${new_file_name} -type f -delete
+        chmod +x ${new_file_name}
+        curr_file_name=${new_file_name}
     fi
+
+    popd > /dev/null
 fi
 
-popd > /dev/null
-${YUZU_DIR}/${CURR_FILE_NAME} $@ > /de
-v/null
+${YUZU_DIR}/${curr_file_name} $@ > /dev/null
