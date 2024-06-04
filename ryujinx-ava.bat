@@ -1,7 +1,7 @@
 @echo off
 set "SCRIPT_DIR=%~dp0"
 set "GH_API_URL=https://api.github.com/repos/Ryujinx/release-channel-master/releases/latest"
-set "GH_FILE_REGEX=^^test-ava-ryujinx-.*-win_x64.zip$"
+set "GH_FILE_REGEX=^^ryujinx-.*-win_x64.zip$"
 set "PUBLISH_DIR=%SCRIPT_DIR%publish"
 set "EXE_PATH=%PUBLISH_DIR%\Ryujinx.exe"
 
