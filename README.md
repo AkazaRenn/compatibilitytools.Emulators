@@ -1,1 +1,1 @@
-Add this script to Steam and launch from there, it checks for updates and automatically downloads Yuzu EA AppImage into the folder called `Yuzu` and start. Also works when there's no Yuzu available.
+Add this script to Steam and launch from there, it checks for updates and automatically downloads the latest Ryujinx release into the folder of the script and start. Also works when there's no Ryujinx available.
