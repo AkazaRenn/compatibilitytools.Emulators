@@ -1,0 +1,7 @@
+"manifest"
+{
+  "version" "2"
+  "commandline" "/ryujinx %verb%"
+  "use_sessions" "1"
+  "compatmanager_layer_name" "ryujinx"
+}

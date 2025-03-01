@@ -1,11 +1,14 @@
-#!/bin/sh
+#!/bin/env sh
+
+# Prevents launching twice.
+if [[ "$1" == "run" ]]; then sleep 1; exit; fi
 
 SCRIPT_DIR=$(dirname $(realpath $0))
-RELEASE_ID_PATH=${SCRIPT_DIR}/release_id
-DOWNLOADED_FILE_PATH=${SCRIPT_DIR}/Shadps4-qt.AppImage
-EXECUTABLE_PATH=${DOWNLOADED_FILE_PATH}
+BIN_DIR=${SCRIPT_DIR}/bin
+RELEASE_ID_PATH=${BIN_DIR}/release_id
+EXECUTABLE_PATH=${BIN_DIR}/Shadps4-qt.AppImage
 ARCHIVE_FILENAME_PATTERN="^shadps4-linux-qt-.*.zip$"
-ARCHIVE_EXTRACT_CMD="unzip -d ${SCRIPT_DIR}"
+ARCHIVE_EXTRACT_CMD="unzip -d ${BIN_DIR}"
 GITHUB_RELEASE_URI="https://api.github.com/repos/shadps4-emu/shadPS4/releases/latest"
 
 latest_release=`curl -s ${GITHUB_RELEASE_URI} | jq -r '.assets[] | select(.name | test('\"${ARCHIVE_FILENAME_PATTERN}\"'))'`
@@ -17,13 +20,18 @@ if [ "${latest_release}" != "" ]; then
         current_release_id=""
     fi
     if [[ ${latest_release_id} != ${current_release_id} ]] || [[ ! -f ${EXECUTABLE_PATH} ]]; then
-        archive_download_path=${SCRIPT_DIR}/download.temp
+        archive_download_path=/tmp/download.temp
         echo ${latest_release} | jq -r '.browser_download_url' | wget -qO ${archive_download_path} -i -
-        rm -rf ${DOWNLOADED_FILE_PATH}
-        ${ARCHIVE_EXTRACT_CMD} ${archive_download_path}
+        mkdir -p ${BIN_DIR}
+        rm -rf ${BIN_DIR}/*
+        ${ARCHIVE_EXTRACT_CMD} ${archive_download_path} > /dev/null
         echo ${latest_release_id} > ${RELEASE_ID_PATH}
         rm -rf ${archive_download_path}
     fi
 fi
 
-${EXECUTABLE_PATH} $@
+if [ "$#" -eq 0 ]; then
+    ${EXECUTABLE_PATH}
+else
+    ${EXECUTABLE_PATH} "${@:2}"
+fi
