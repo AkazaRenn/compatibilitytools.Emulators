@@ -30,8 +30,4 @@ if [ "${latest_release}" != "" ]; then
     fi
 fi
 
-if [ "$#" -eq 0 ]; then
-    ${EXECUTABLE_PATH}
-else
-    ${EXECUTABLE_PATH} "${@:2}"
-fi
+${EXECUTABLE_PATH} "${@:2}"
