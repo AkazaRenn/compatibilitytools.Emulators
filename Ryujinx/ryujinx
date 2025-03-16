@@ -9,7 +9,7 @@ RELEASE_ID_PATH=${BIN_DIR}/release_id
 EXECUTABLE_PATH=${BIN_DIR}/publish/Ryujinx.sh
 ARCHIVE_FILENAME_PATTERN="^ryujinx-.*-linux_x64.tar.gz$"
 ARCHIVE_EXTRACT_CMD="tar -C ${BIN_DIR} -xf"
-GITHUB_RELEASE_URI="https://api.github.com/repos/Ryubing/Ryujinx/releases/latest"
+GITHUB_RELEASE_URI="https://api.github.com/repos/Ryubing/Stable-Releases/releases/latest"
 
 latest_release=`curl -s ${GITHUB_RELEASE_URI} | jq -r '.assets[] | select(.name | test('\"${ARCHIVE_FILENAME_PATTERN}\"'))'`
 latest_release_id=`echo ${latest_release} | jq -r .id`
@@ -30,4 +30,5 @@ if [ "${latest_release}" != "" ]; then
     fi
 fi
 
+chmod +x ${EXECUTABLE_PATH}
 ${EXECUTABLE_PATH} "${@:2}"

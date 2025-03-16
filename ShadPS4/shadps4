@@ -30,4 +30,5 @@ if [ "${latest_release}" != "" ]; then
     fi
 fi
 
+chmod +x ${EXECUTABLE_PATH}
 ${EXECUTABLE_PATH} "${@:2}"
