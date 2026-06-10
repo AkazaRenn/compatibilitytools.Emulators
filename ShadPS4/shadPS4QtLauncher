@@ -1,0 +1,41 @@
+#!/bin/env sh
+
+# Prevents launching twice.
+if [[ "$1" == "run" ]]; then sleep 1; exit; fi
+
+SCRIPT_DIR=$(dirname $(realpath $0))
+
+BIN_DIR="${SCRIPT_DIR}/launcher"
+EXECUTABLE_PATH="${BIN_DIR}/shadPS4QtLauncher-qt.AppImage"
+EXECUTE_ARGS=""
+DOWNLOAD_FILENAME_PATTERN="^shadPS4QtLauncher-linux-qt-.*.zip$"
+GITHUB_REPO="shadps4-emu/shadps4-qtlauncher"
+process_download() { unzip -d ${BIN_DIR} ${1}; }
+get_latest_release() { echo $(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | jq -r '.assets[] | select(.name | test('\"${DOWNLOAD_FILENAME_PATTERN}\"'))'); }
+
+latest_release=`get_latest_release`
+latest_release_id=`echo ${latest_release} | jq -r .id`
+if [ "${latest_release}" != "" ]; then
+    release_id_path=${BIN_DIR}/release_id
+    if [ -f "${release_id_path}" ]; then
+        current_release_id=$(cat ${release_id_path})
+    else
+        current_release_id=""
+    fi
+    if [[ ${latest_release_id} != ${current_release_id} ]] || [[ ! -f ${EXECUTABLE_PATH} ]]; then
+        file_download_path="/tmp/download.temp"
+        echo ${latest_release} | jq -r '.browser_download_url' | wget -qO ${file_download_path} -i -
+        mkdir -p ${BIN_DIR}
+        rm -rf ${BIN_DIR}/*
+        process_download ${file_download_path} > /dev/null
+        chmod +x ${EXECUTABLE_PATH}
+        echo ${latest_release_id} > ${release_id_path}
+        rm -rf ${file_download_path}
+    fi
+fi
+
+if [ "$#" -eq 0 ]; then
+    ${EXECUTABLE_PATH}
+else
+    ${EXECUTABLE_PATH} "${EXECUTE_ARGS}" "${@:2}" -f
+fi
